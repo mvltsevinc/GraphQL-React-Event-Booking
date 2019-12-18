@@ -9,7 +9,7 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-.form-control label, .form-control input {
+.form-control label, .form-control input, .form-control textarea {
   width: 100%;
   display: block;
 }
