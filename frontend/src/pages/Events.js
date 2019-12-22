@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 
 import Modal from '../components/Modal/Modal';
 import Backdrop from '../components/Backdrop/Backdrop';
+import EventList from '../components/Events/EventList/EventList';
+import Spinner from '../components/Spinner/Spinner';
 
 import AuthContext from '../context/auth-context';
 
@@ -10,7 +12,8 @@ import './Events.css';
 class EventsPage extends Component {
   state = {
     creating: false,
-    events: []
+    events: [],
+    isLoading: false
   };
 
   static contextType = AuthContext;
@@ -60,10 +63,6 @@ class EventsPage extends Component {
                 description
                 price
                 date
-                creator{
-                  _id
-                  email
-                }
               }
             }
         `
@@ -87,7 +86,20 @@ class EventsPage extends Component {
       })
       .then(resData => {
         console.log(resData);
-        this.fetchEvents();
+        this.setState(prevState => {
+          const updatedEvents = [...prevState.events];
+          updatedEvents.unshift({
+            _id: resData.data.createEvent._id,
+            title: resData.data.createEvent.title,
+            description: resData.data.createEvent.description,
+            price: resData.data.createEvent.price,
+            date: resData.data.createEvent.date,
+            creator: {
+              _id: this.context.userId
+            }
+          });
+          return { events: updatedEvents };
+        });
       })
       .catch(err => {
         console.log(err);
@@ -99,6 +111,7 @@ class EventsPage extends Component {
   };
 
   fetchEvents = () => {
+    this.setState({ isLoading: true });
     const requestBody = {
       query: `
             query {
@@ -133,22 +146,15 @@ class EventsPage extends Component {
       .then(resData => {
         console.log(resData);
         const events = resData.data.events;
-        this.setState({ events: events });
+        this.setState({ events: events, isLoading: false });
       })
       .catch(err => {
         console.log(err);
+        this.setState({ isLoading: false });
       });
   };
 
   render() {
-    const eventList = this.state.events.map(event => {
-      return (
-        <li key={event._id} className='events__list-item'>
-          {event.title}
-        </li>
-      );
-    });
-
     return (
       <React.Fragment>
         {this.state.creating && <Backdrop />}
@@ -196,7 +202,15 @@ class EventsPage extends Component {
             </button>
           </div>
         )}
-        <ul className='events__list'>{eventList}</ul>
+
+        {this.state.isLoading ? (
+          <Spinner />
+        ) : (
+          <EventList
+            events={this.state.events}
+            authUserId={this.context.userId}
+          />
+        )}
       </React.Fragment>
     );
   }
