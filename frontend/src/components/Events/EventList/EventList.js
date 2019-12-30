@@ -7,6 +7,7 @@ const EventList = props => {
   const events = props.events.map(event => {
     return (
       <EventItem
+        key={event._id}
         eventId={event._id}
         title={event.title}
         price={event.price}

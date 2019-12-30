@@ -17,6 +17,8 @@ class EventsPage extends Component {
     selectedEvent: null
   };
 
+  isActive = true; // Response donmeden başka component ekrana mount edilince yani bu unmount olunca ve unmount olduktan sonra response sonunda state değiştirmeye çalışınca uyarı verdiği için kullan.
+
   static contextType = AuthContext;
 
   constructor(props) {
@@ -147,11 +149,15 @@ class EventsPage extends Component {
       .then(resData => {
         console.log(resData);
         const events = resData.data.events;
-        this.setState({ events: events, isLoading: false });
+        if (this.isActive) {
+          this.setState({ events: events, isLoading: false });
+        }
       })
       .catch(err => {
         console.log(err);
-        this.setState({ isLoading: false });
+        if (this.isActive) {
+          this.setState({ isLoading: false });
+        }
       });
   };
 
@@ -202,6 +208,10 @@ class EventsPage extends Component {
         console.log(err);
       });
   };
+
+  componentWillUnmount() {
+    this.isActive = false;
+  }
 
   render() {
     return (
